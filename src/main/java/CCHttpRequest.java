@@ -49,11 +49,11 @@ public class CCHttpRequest {
 
     public CCHttpRequest(String reqString) {
         HashMap<String, String> requestMap = parseRequestString(reqString);
-        this.method = requestMap.get(RequestParts.METHOD.name());
-        this.path = requestMap.get(RequestParts.PATH.name());
-        this.protocol = requestMap.get(RequestParts.PROTOCOL.name());
+        this.method = requestMap.get(RequestParts.METHOD.name()).trim();
+        this.path = requestMap.get(RequestParts.PATH.name()).trim();
+        this.protocol = requestMap.get(RequestParts.PROTOCOL.name()).trim();
         this.headers = parseHeaders(requestMap.get(RequestParts.HEADERS.name()));
-        this.body = requestMap.get(RequestParts.BODY.name());
+        this.body = requestMap.get(RequestParts.BODY.name()).trim();
     }
 
     public String getMethod() {
