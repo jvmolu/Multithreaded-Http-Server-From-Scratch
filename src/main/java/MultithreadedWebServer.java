@@ -18,6 +18,7 @@ public class MultithreadedWebServer {
         StringBuilder request = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
+            System.out.println("line: " + line);
             request.append(line + "\r\n");
             if (line.isEmpty()) {
                 break;
