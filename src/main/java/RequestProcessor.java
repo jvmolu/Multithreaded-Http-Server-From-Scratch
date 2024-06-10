@@ -58,7 +58,7 @@ public class RequestProcessor {
         // GET /files/index.html HTTP/1.1\r\nHost: localhost:4221\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\n\r\n
         // SAMPLE RESPONSE:
         // HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 14\r\n\r\n<html>content</html>
-        if(request.getPath().startsWith("/files/")) {
+        if(request.getPath().startsWith("/files/") && request.getMethod().equalsIgnoreCase("GET")) {
             String fileName = request.getPath().substring(7);
             if (fileName.contains("..")) {
                 return "HTTP/1.1 403 Forbidden\r\n\r\n";
@@ -81,6 +81,31 @@ public class RequestProcessor {
             }
         }
 
+
+        // POST /files/{filename}
+        // SAMPLE REQUEST:
+        // POST /files/file_123 HTTP/1.1\r\nHost: localhost:4221\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\nContent-Type: application/octet-stream\r\nContent-Length: 5\r\n\r\n12345
+        // SAMPLE RESPONSE:
+        // HTTP/1.1 201 Created\r\n\r\n
+        if(request.getPath().startsWith("/files/") && request.getMethod().equalsIgnoreCase("POST")) {
+            String fileName = request.getPath().substring(7);
+            if (fileName.contains("..")) {
+                return "HTTP/1.1 403 Forbidden\r\n\r\n";
+            }
+            try {
+                File file = new File(filesDirectory + "/" + fileName);
+                if (file.exists()) {
+                    return "HTTP/1.1 409 Conflict\r\n\r\n";
+                }
+                Files.write(file.toPath(), request.getBody().getBytes());
+                CCHttpResponse response = new CCHttpResponse();
+                response.setProtocol("HTTP/1.1");
+                response.setStatus(HttpStatus.CREATED);
+                return response.toString();
+            } catch (Exception e) {
+                return "HTTP/1.1 500 Internal Server Error\r\n\r\n";
+            }
+        }        
         
         return "HTTP/1.1 404 Not Found\r\n\r\n";
     }
