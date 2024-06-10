@@ -1,6 +1,13 @@
+import java.io.File;
+import java.nio.file.Files;
+
 public class RequestProcessor {
     
     public static String handleRequest(String reqString) {
+        return handleRequest(reqString, "default");
+    }
+
+    public static String handleRequest(String reqString, String filesDirectory) {
         
         System.out.println("Recieved request: " + reqString);
 
@@ -45,6 +52,35 @@ public class RequestProcessor {
             response.setBody(userAgent);
             return response.toString();
         }
+
+        // /files/{filename}
+        // SAMPLE REQUEST:
+        // GET /files/index.html HTTP/1.1\r\nHost: localhost:4221\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\n\r\n
+        // SAMPLE RESPONSE:
+        // HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 14\r\n\r\n<html>content</html>
+        if(request.getPath().startsWith("/files/")) {
+            String fileName = request.getPath().substring(7);
+            if (fileName.contains("..")) {
+                return "HTTP/1.1 403 Forbidden\r\n\r\n";
+            }
+            try {
+                File file = new File(filesDirectory + "/" + fileName);
+                if (!file.exists() || !file.isFile()) {
+                    return "HTTP/1.1 404 Not Found\r\n\r\n";
+                }
+                String fileContent = new String(Files.readAllBytes(file.toPath()));
+                CCHttpResponse response = new CCHttpResponse();
+                response.setProtocol("HTTP/1.1");
+                response.setStatus(HttpStatus.OK);
+                response.setHeader("Content-Type", "application/octet-stream");
+                response.setHeader("Content-Length", String.valueOf(fileContent.length()));
+                response.setBody(fileContent);
+                return response.toString();
+            } catch (Exception e) {
+                return "HTTP/1.1 500 Internal Server Error\r\n\r\n";
+            }
+        }
+
         
         return "HTTP/1.1 404 Not Found\r\n\r\n";
     }
