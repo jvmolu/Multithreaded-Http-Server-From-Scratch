@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
@@ -14,20 +12,16 @@ public class MultithreadedWebServer {
     private ExecutorService executorService;
 
     public static String readClientMessage(Socket clientSocket) throws IOException {
-        System.out.println("reading client message");
         Scanner scanner = new Scanner(clientSocket.getInputStream());
-        StringBuilder request = new StringBuilder();
+        String clientMessage = "";
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            System.out.println("line: " + line);
             if (line.isEmpty()) {
                 break;
             }
-            request.append(line).append("\r\n");
+            clientMessage += line + "\r\n";
         }
-        scanner.close();
-        System.out.println("client message: " + request.toString());
-        return request.toString();
+        return clientMessage;
     }
 
     public MultithreadedWebServer(int port, int num_threads) throws IOException {
