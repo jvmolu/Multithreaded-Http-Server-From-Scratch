@@ -19,6 +19,7 @@ public class MultithreadedWebServer {
         StringBuilder request = new StringBuilder();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
+            System.out.println("line: " + line);
             if (line.isEmpty()) {
                 break;
             }
