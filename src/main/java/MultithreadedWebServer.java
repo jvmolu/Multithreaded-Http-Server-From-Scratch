@@ -16,7 +16,8 @@ public class MultithreadedWebServer {
         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         char[] buffer = new char[bytes];
         in.read(buffer, 0, bytes);
-        return new String(buffer);        
+        System.out.println("received message: " + new String(buffer));
+        return new String(buffer);
     }
 
     public MultithreadedWebServer(int port, int num_threads) throws IOException {
