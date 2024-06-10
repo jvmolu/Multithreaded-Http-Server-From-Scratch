@@ -8,7 +8,6 @@ import java.util.concurrent.Executors;
 
 public class MultithreadedWebServer {
 
-    private Socket clientSocket;
     private ServerSocket serverSocket;
     private ExecutorService executorService;
 
@@ -21,7 +20,6 @@ public class MultithreadedWebServer {
     }
 
     public MultithreadedWebServer(int port, int num_threads) throws IOException {
-        this.clientSocket = null;
         this.serverSocket = new ServerSocket(port);
         this.serverSocket.setReuseAddress(true);
         this.executorService = Executors.newFixedThreadPool(num_threads);
@@ -43,9 +41,10 @@ public class MultithreadedWebServer {
     public void start() {
         while (true) {
             try {
-                clientSocket = serverSocket.accept();
+                Socket clientSocket = serverSocket.accept();
                 System.out.println("accepted new connection");
-                handleConnection(clientSocket);
+                executorService.submit(() -> handleConnection(clientSocket));
+                // handleConnection(clientSocket);
             } catch (IOException e) {
                 System.out.println("IOException: " + e.getMessage());
             }
