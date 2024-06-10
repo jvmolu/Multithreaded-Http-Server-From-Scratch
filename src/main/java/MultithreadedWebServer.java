@@ -49,6 +49,8 @@ public class MultithreadedWebServer {
         while (true) {
             try {
                 clientSocket = serverSocket.accept();
+                // Timeout
+                clientSocket.setSoTimeout(9000);
                 System.out.println("accepted new connection");
                 executorService.submit(() -> handleConnection(clientSocket));
             } catch (IOException e) {
