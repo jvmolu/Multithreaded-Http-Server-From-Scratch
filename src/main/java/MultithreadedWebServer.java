@@ -30,6 +30,7 @@ public class MultithreadedWebServer {
     public MultithreadedWebServer(int port, int num_threads) throws IOException {
         this.clientSocket = null;
         this.serverSocket = new ServerSocket(port);
+        this.serverSocket.setReuseAddress(true);
         this.executorService = Executors.newFixedThreadPool(num_threads);
     }
 
