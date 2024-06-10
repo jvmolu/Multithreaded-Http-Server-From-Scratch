@@ -45,7 +45,7 @@ public class MultithreadedWebServer {
             try {
                 clientSocket = serverSocket.accept();
                 System.out.println("accepted new connection");
-                executorService.submit(() -> handleConnection(clientSocket));
+                handleConnection(clientSocket);
             } catch (IOException e) {
                 System.out.println("IOException: " + e.getMessage());
             }
