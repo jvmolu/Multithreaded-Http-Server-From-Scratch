@@ -29,7 +29,7 @@ public class MultithreadedWebServer {
     public void handleConnection(Socket clientSocket) {
         try {
             System.out.println("handling connection");
-            String clientMessage = readClientMessage(clientSocket);
+            String clientMessage = readClientMessage(clientSocket, 1024);
             String outputString = RequestProcessor.handleRequest(clientMessage);
             clientSocket.getOutputStream().write(outputString.getBytes());
             clientSocket.close();
