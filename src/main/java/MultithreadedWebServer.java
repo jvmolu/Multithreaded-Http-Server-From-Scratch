@@ -32,6 +32,7 @@ public class MultithreadedWebServer {
             System.out.println("handling connection");
             String clientMessage = readClientMessage(clientSocket, 1024);
             String outputString = RequestProcessor.handleRequest(clientMessage);
+            System.out.println("sending response: " + outputString);
             clientSocket.getOutputStream().write(outputString.getBytes());
             clientSocket.close();
         } catch (IOException e) {

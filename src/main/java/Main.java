@@ -7,7 +7,7 @@ public class Main {
     System.out.println("Logs from your program will appear here!");
     
     try {
-      MultithreadedWebServer server = new MultithreadedWebServer(4221, 1);
+      MultithreadedWebServer server = new MultithreadedWebServer(4221, 10);
       server.start();
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
