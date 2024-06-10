@@ -15,6 +15,7 @@ public class MultithreadedWebServer {
     public String readClientMessage(Socket clientSocket, int bytes) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         char[] buffer = new char[bytes];
+        System.out.println("reading message");
         in.read(buffer, 0, bytes);
         System.out.println("received message: " + new String(buffer));
         return new String(buffer);
@@ -43,8 +44,6 @@ public class MultithreadedWebServer {
         while (true) {
             try {
                 clientSocket = serverSocket.accept();
-                // Timeout
-                clientSocket.setSoTimeout(9000);
                 System.out.println("accepted new connection");
                 executorService.submit(() -> handleConnection(clientSocket));
             } catch (IOException e) {
