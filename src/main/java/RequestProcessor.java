@@ -27,6 +27,22 @@ public class RequestProcessor {
             response.setBody(echoString);
             return response.toString();
         }
+
+        // USER AGENT ROUTE
+        // SAMPLE REQUEST:
+        // GET /user-agent HTTP/1.1\r\nHost: localhost:4221\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\n\r\n
+        // SAMPLE RESPONSE:
+        // HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 14\r\n\r\ncurl/7.64.1
+        if(request.getPath().equalsIgnoreCase("/user-agent")) {
+            String userAgent = request.getHeaders().get("User-Agent");
+            CCHttpResponse response = new CCHttpResponse();
+            response.setProtocol("HTTP/1.1");
+            response.setStatus(HttpStatus.OK);
+            response.setHeader("Content-Type", "text/plain");
+            response.setHeader("Content-Length", String.valueOf(userAgent.length()));
+            response.setBody(userAgent);
+            return response.toString();
+        }
         
         return "HTTP/1.1 404 Not Found\r\n\r\n";
     }
