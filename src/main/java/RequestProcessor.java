@@ -2,6 +2,8 @@ public class RequestProcessor {
     
     public static String handleRequest(String reqString) {
         
+        System.out.println("Recieved request: " + reqString);
+
         CCHttpRequest request = new CCHttpRequest(reqString);
         
         // PING ROUTE - HEALTH CHECK
