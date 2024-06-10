@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -10,10 +12,9 @@ public class MultithreadedWebServer {
     private ServerSocket serverSocket;
     private ExecutorService executorService;
 
-    public static String readClientMessage(Socket clientSocket, Integer bytes) throws IOException {
-        byte[] buffer = new byte[bytes];
-        int bytesRead = clientSocket.getInputStream().read(buffer);
-        return new String(buffer, 0, bytesRead);
+    public static String readClientMessage(Socket clientSocket) throws IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        return in.readLine();
     }
 
     public MultithreadedWebServer(int port, int num_threads) throws IOException {
@@ -25,7 +26,7 @@ public class MultithreadedWebServer {
     public void handleConnection(Socket clientSocket) {
         try {
             System.out.println("handling connection");
-            String clientMessage = readClientMessage(clientSocket, 1024);
+            String clientMessage = readClientMessage(clientSocket);
             String outputString = RequestProcessor.handleRequest(clientMessage);
             clientSocket.getOutputStream().write(outputString.getBytes());
             clientSocket.close();
