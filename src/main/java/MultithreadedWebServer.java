@@ -12,20 +12,11 @@ public class MultithreadedWebServer {
     private ServerSocket serverSocket;
     private ExecutorService executorService;
 
-    public String readClientMessage(Socket clientSocket) throws IOException {
-        System.out.println("reading client message");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        StringBuilder request = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            System.out.println("line: " + line);
-            request.append(line + "\r\n");
-            if (line.isEmpty()) {
-                break;
-            }
-        }
-        System.out.println("Request: " + request.toString());
-        return request.toString();
+    public String readClientMessage(Socket clientSocket, int bytes) throws IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        char[] buffer = new char[bytes];
+        in.read(buffer, 0, bytes);
+        return new String(buffer);        
     }
 
     public MultithreadedWebServer(int port, int num_threads) throws IOException {
