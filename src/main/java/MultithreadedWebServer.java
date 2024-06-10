@@ -14,11 +14,10 @@ public class MultithreadedWebServer {
 
     public String readClientMessage(Socket clientSocket, int bytes) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        char[] buffer = new char[bytes];
-        System.out.println("reading message");
-        in.read(buffer, 0, bytes);
-        System.out.println("received message: " + new String(buffer));
-        return new String(buffer);
+        String inputLine;
+        inputLine = in.readLine();
+        System.out.println("received message: " + inputLine);
+        return inputLine;
     }
 
     public MultithreadedWebServer(int port, int num_threads) throws IOException {
