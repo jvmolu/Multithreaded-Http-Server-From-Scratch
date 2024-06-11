@@ -7,18 +7,36 @@ public class RequestProcessor {
         return handleRequest(reqString, "default");
     }
 
+    public static String getPossibleEncoding(CCHttpRequest request) {
+        if (request.getHeaders().containsKey("Accept-Encoding")) {
+            for (String value : request.getHeaders().get("Accept-Encoding").split(",")) {
+                if (ContentEncoding.isSupported(value.trim())) {
+                    return value.trim();
+                }
+            }
+        }
+        return null;
+    }
+
     public static String handleRequest(String reqString, String filesDirectory) {
         
         System.out.println("Recieved request: " + reqString);
 
         CCHttpRequest request = new CCHttpRequest(reqString);
+        CCHttpResponse.Builder responseBuilder = new CCHttpResponse.Builder();
+        responseBuilder.protocol("HTTP/1.1");
+        responseBuilder.status(HttpStatus.NOT_FOUND);
+
+        // ENCODING
+        String encoding = getPossibleEncoding(request);
+        if (encoding != null) {
+            responseBuilder.header("Content-Encoding", encoding);
+        }
         
         // PING ROUTE - HEALTH CHECK
         if(request.getPath().equalsIgnoreCase("/")) {
-            CCHttpResponse response = new CCHttpResponse();
-            response.setProtocol("HTTP/1.1");            
-            response.setStatus(HttpStatus.OK);
-            return response.toString();
+            responseBuilder.status(HttpStatus.OK)
+                .protocol("HTTP/1.1");
         }
 
         // ECHO ROUTE /echo/{str}
@@ -26,15 +44,13 @@ public class RequestProcessor {
         // GET /echo/abc HTTP/1.1\r\nHost: localhost:4221\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\n\r\n
         // SAMPLE RESPONSE:
         // HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 3\r\n\r\nabc
-        if(request.getPath().startsWith("/echo/")) {
+        else if(request.getPath().startsWith("/echo/")) {
             String echoString = request.getPath().substring(6);
-            CCHttpResponse response = new CCHttpResponse();
-            response.setProtocol("HTTP/1.1");
-            response.setStatus(HttpStatus.OK);
-            response.setHeader("Content-Type", "text/plain");
-            response.setHeader("Content-Length", String.valueOf(echoString.length()));
-            response.setBody(echoString);
-            return response.toString();
+            responseBuilder.status(HttpStatus.OK)
+                .protocol("HTTP/1.1")
+                .header("Content-Type", "text/plain")
+                .header("Content-Length", String.valueOf(echoString.length()))
+                .body(echoString);
         }
 
         // USER AGENT ROUTE
@@ -42,15 +58,13 @@ public class RequestProcessor {
         // GET /user-agent HTTP/1.1\r\nHost: localhost:4221\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\n\r\n
         // SAMPLE RESPONSE:
         // HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 14\r\n\r\ncurl/7.64.1
-        if(request.getPath().equalsIgnoreCase("/user-agent")) {
+        else if(request.getPath().equalsIgnoreCase("/user-agent")) {
             String userAgent = request.getHeaders().get("User-Agent");
-            CCHttpResponse response = new CCHttpResponse();
-            response.setProtocol("HTTP/1.1");
-            response.setStatus(HttpStatus.OK);
-            response.setHeader("Content-Type", "text/plain");
-            response.setHeader("Content-Length", String.valueOf(userAgent.length()));
-            response.setBody(userAgent);
-            return response.toString();
+            responseBuilder.status(HttpStatus.OK)
+                .protocol("HTTP/1.1")
+                .header("Content-Type", "text/plain")
+                .header("Content-Length", String.valueOf(userAgent.length()))
+                .body(userAgent);
         }
 
         // /files/{filename}
@@ -58,26 +72,28 @@ public class RequestProcessor {
         // GET /files/index.html HTTP/1.1\r\nHost: localhost:4221\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\n\r\n
         // SAMPLE RESPONSE:
         // HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 14\r\n\r\n<html>content</html>
-        if(request.getPath().startsWith("/files/") && request.getMethod().equalsIgnoreCase("GET")) {
+        else if(request.getPath().startsWith("/files/") && request.getMethod().equalsIgnoreCase("GET")) {
             String fileName = request.getPath().substring(7);
             if (fileName.contains("..")) {
-                return "HTTP/1.1 403 Forbidden\r\n\r\n";
-            }
-            try {
-                File file = new File(filesDirectory + "/" + fileName);
-                if (!file.exists() || !file.isFile()) {
-                    return "HTTP/1.1 404 Not Found\r\n\r\n";
+                responseBuilder.status(HttpStatus.FORBIDDEN)
+                    .protocol("HTTP/1.1");
+            } else {
+                try {
+                    File file = new File(filesDirectory + "/" + fileName);
+                    if (!file.exists() || !file.isFile()) {
+                        responseBuilder.status(HttpStatus.NOT_FOUND)
+                            .protocol("HTTP/1.1");
+                    }
+                    String fileContent = new String(Files.readAllBytes(file.toPath()));
+                    responseBuilder.status(HttpStatus.OK)
+                        .protocol("HTTP/1.1")
+                        .header("Content-Type", "application/octet-stream")
+                        .header("Content-Length", String.valueOf(fileContent.length()))
+                        .body(fileContent);
+                } catch (Exception e) {
+                    responseBuilder.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .protocol("HTTP/1.1");
                 }
-                String fileContent = new String(Files.readAllBytes(file.toPath()));
-                CCHttpResponse response = new CCHttpResponse();
-                response.setProtocol("HTTP/1.1");
-                response.setStatus(HttpStatus.OK);
-                response.setHeader("Content-Type", "application/octet-stream");
-                response.setHeader("Content-Length", String.valueOf(fileContent.length()));
-                response.setBody(fileContent);
-                return response.toString();
-            } catch (Exception e) {
-                return "HTTP/1.1 500 Internal Server Error\r\n\r\n";
             }
         }
 
@@ -87,26 +103,28 @@ public class RequestProcessor {
         // POST /files/file_123 HTTP/1.1\r\nHost: localhost:4221\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\nContent-Type: application/octet-stream\r\nContent-Length: 5\r\n\r\n12345
         // SAMPLE RESPONSE:
         // HTTP/1.1 201 Created\r\n\r\n
-        if(request.getPath().startsWith("/files/") && request.getMethod().equalsIgnoreCase("POST")) {
+        else if(request.getPath().startsWith("/files/") && request.getMethod().equalsIgnoreCase("POST")) {
             String fileName = request.getPath().substring(7);
             if (fileName.contains("..")) {
-                return "HTTP/1.1 403 Forbidden\r\n\r\n";
-            }
-            try {
-                File file = new File(filesDirectory + "/" + fileName);
-                if (file.exists()) {
-                    return "HTTP/1.1 409 Conflict\r\n\r\n";
+                responseBuilder.status(HttpStatus.FORBIDDEN)
+                    .protocol("HTTP/1.1");
+            } else {
+                try {
+                    File file = new File(filesDirectory + "/" + fileName);
+                    if (file.exists()) {
+                        responseBuilder.status(HttpStatus.CONFLICT)
+                            .protocol("HTTP/1.1");
+                    }
+                    Files.write(file.toPath(), request.getBody().getBytes());
+                    responseBuilder.status(HttpStatus.CREATED)
+                        .protocol("HTTP/1.1");
+                } catch (Exception e) {
+                    responseBuilder.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .protocol("HTTP/1.1");
                 }
-                Files.write(file.toPath(), request.getBody().getBytes());
-                CCHttpResponse response = new CCHttpResponse();
-                response.setProtocol("HTTP/1.1");
-                response.setStatus(HttpStatus.CREATED);
-                return response.toString();
-            } catch (Exception e) {
-                return "HTTP/1.1 500 Internal Server Error\r\n\r\n";
             }
         }        
         
-        return "HTTP/1.1 404 Not Found\r\n\r\n";
+        return responseBuilder.build().toString();
     }
 }
