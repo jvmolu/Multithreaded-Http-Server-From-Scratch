@@ -84,12 +84,14 @@ public class RequestProcessor {
                         responseBuilder.status(HttpStatus.NOT_FOUND)
                             .protocol("HTTP/1.1");
                     }
-                    String fileContent = new String(Files.readAllBytes(file.toPath()));
-                    responseBuilder.status(HttpStatus.OK)
-                        .protocol("HTTP/1.1")
-                        .header("Content-Type", "application/octet-stream")
-                        .header("Content-Length", String.valueOf(fileContent.length()))
-                        .body(fileContent);
+                    else {
+                        String fileContent = new String(Files.readAllBytes(file.toPath()));
+                        responseBuilder.status(HttpStatus.OK)
+                            .protocol("HTTP/1.1")
+                            .header("Content-Type", "application/octet-stream")
+                            .header("Content-Length", String.valueOf(fileContent.length()))
+                            .body(fileContent);
+                    }
                 } catch (Exception e) {
                     responseBuilder.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .protocol("HTTP/1.1");
@@ -115,9 +117,11 @@ public class RequestProcessor {
                         responseBuilder.status(HttpStatus.CONFLICT)
                             .protocol("HTTP/1.1");
                     }
-                    Files.write(file.toPath(), request.getBody().getBytes());
-                    responseBuilder.status(HttpStatus.CREATED)
-                        .protocol("HTTP/1.1");
+                    else {
+                        Files.write(file.toPath(), request.getBody().getBytes());
+                        responseBuilder.status(HttpStatus.CREATED)
+                            .protocol("HTTP/1.1");
+                    }
                 } catch (Exception e) {
                     responseBuilder.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .protocol("HTTP/1.1");
