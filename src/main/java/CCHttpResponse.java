@@ -81,6 +81,7 @@ public class CCHttpResponse {
             response.body = this.body;
             // Content-Encoding
             String encoding = this.headers.get("Content-Encoding");
+            System.out.println("Encoding response using " + encoding);
             if (encoding != null && ContentEncoding.isSupported(encoding)) {
                 System.out.println("Encoding response using " + encoding);
                 response.body = ContentEncoding.valueOf(encoding.toUpperCase()).encode(response.body);
