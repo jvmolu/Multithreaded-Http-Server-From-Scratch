@@ -22,12 +22,7 @@ public enum ContentEncoding {
     }
 
     public String encode(String content) {
-        try {
-            return Base64.getEncoder().encodeToString(encoder.apply(content.getBytes("UTF-8")));
-        } catch (UnsupportedEncodingException e) {
-            System.out.println("UnsupportedEncodingException: " + e.getMessage());
-            return null;
-        }
+        return Base64.getEncoder().encodeToString(encoder.apply(content.getBytes()));        
     }
 
     public static Boolean isSupported(String encoding) {
