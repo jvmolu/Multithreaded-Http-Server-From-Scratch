@@ -1,4 +1,5 @@
 import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import java.util.function.Function;
 
 /*
@@ -22,8 +23,7 @@ public enum ContentEncoding {
 
     public String encode(String content) {
         try {
-            System.out.println("Encoding " + content + " using " + encoding);
-            return new String(encoder.apply(content.getBytes("UTF-8")));
+            return Base64.getEncoder().encodeToString(encoder.apply(content.getBytes("UTF-8")));
         } catch (UnsupportedEncodingException e) {
             System.out.println("UnsupportedEncodingException: " + e.getMessage());
             return null;
