@@ -1,3 +1,4 @@
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class CCHttpResponse {
@@ -84,9 +85,9 @@ public class CCHttpResponse {
             System.out.println("Encoding response using " + encoding);
             if (encoding != null && ContentEncoding.isSupported(encoding)) {
                 System.out.println("Encoding response using " + encoding);
-                byte[] encodedData = ContentEncoding.valueOf(encoding.toUpperCase()).encode(response.body.getBytes());
-                response.body = new String(encodedData);
+                byte[] encodedData = ContentEncoding.valueOf(encoding.toUpperCase()).encode(response.body.getBytes(StandardCharsets.UTF_8));
                 response.headers.put("Content-Length", String.valueOf(encodedData.length));
+                response.body = new String(encodedData, StandardCharsets.UTF_8);
             }
             return response;
         }
