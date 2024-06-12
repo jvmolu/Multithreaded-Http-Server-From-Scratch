@@ -21,7 +21,7 @@ public enum ContentEncoding {
     }
 
     public String encode(String content) {
-        return Base64.getEncoder().encodeToString(encoder.apply(content.getBytes()));        
+        return new String(encoder.apply(content.getBytes()));
     }
 
     public static Boolean isSupported(String encoding) {
