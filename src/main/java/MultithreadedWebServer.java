@@ -30,9 +30,9 @@ public class MultithreadedWebServer {
     public void handleConnection(Socket clientSocket) {
         try {
             String clientMessage = readClientMessage(clientSocket, 1024);
-            String outputString = RequestProcessor.handleRequest(clientMessage, fileDirectory);
-            System.out.println("sending response: " + outputString);
-            clientSocket.getOutputStream().write(outputString.getBytes());
+            CCHttpResponse response = RequestProcessor.handleRequest(clientMessage, fileDirectory);
+            System.out.println("sending response: " + response.toString());
+            response.writeToStream(clientSocket.getOutputStream());
             clientSocket.close();
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());

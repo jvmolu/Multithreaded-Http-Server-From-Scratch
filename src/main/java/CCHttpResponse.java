@@ -1,3 +1,5 @@
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
@@ -6,13 +8,13 @@ public class CCHttpResponse {
     private HttpStatus status;
     private String protocol;
     private HashMap<String, String> headers;
-    private String body;
+    private byte[] body;
     
     public CCHttpResponse() {
         this.status = HttpStatus.OK;
         this.protocol = "";
         this.headers = new HashMap<String, String>();
-        this.body = "";
+        this.body = new byte[0];
     }
     
     public void setStatus(HttpStatus status) {
@@ -31,7 +33,7 @@ public class CCHttpResponse {
         this.headers.put(key, value);
     }
 
-    public void setBody(String body) {
+    public void setBody(byte[] body) {
         this.body = body;
     }
 
@@ -40,13 +42,13 @@ public class CCHttpResponse {
         private HttpStatus status;
         private String protocol;
         private HashMap<String, String> headers;
-        private String body;
+        private byte[] body;
 
         public Builder() {
             this.status = HttpStatus.OK;
             this.protocol = "";
             this.headers = new HashMap<String, String>();
-            this.body = "";
+            this.body = new byte[0];
         }
 
         public Builder status(HttpStatus status) {
@@ -69,7 +71,7 @@ public class CCHttpResponse {
             return this;
         }
 
-        public Builder body(String body) {
+        public Builder body(byte[] body) {
             this.body = body;
             return this;
         }
@@ -85,9 +87,9 @@ public class CCHttpResponse {
             System.out.println("Encoding response using " + encoding);
             if (encoding != null && ContentEncoding.isSupported(encoding)) {
                 System.out.println("Encoding response using " + encoding);
-                byte[] encodedData = ContentEncoding.valueOf(encoding.toUpperCase()).encode(response.body.getBytes(StandardCharsets.UTF_8));
+                byte[] encodedData = ContentEncoding.valueOf(encoding.toUpperCase()).encode(this.body);
                 response.headers.put("Content-Length", String.valueOf(encodedData.length));
-                response.body = new String(encodedData, StandardCharsets.UTF_8);
+                response.body = encodedData;
             }
             return response;
         }
@@ -99,7 +101,23 @@ public class CCHttpResponse {
         for (String key : headers.keySet()) {
             response += key + ": " + headers.get(key) + "\r\n";
         }
-        response += "\r\n" + body;
+        response += "\r\n" + new String(body, StandardCharsets.UTF_8);
         return response;
+    }
+
+    public void writeToStream(OutputStream outputStream) throws IOException {
+        outputStream.write(protocol.getBytes());
+        outputStream.write(" ".getBytes());
+        outputStream.write(status.toString().getBytes());
+        outputStream.write("\r\n".getBytes());
+        for (String key : headers.keySet()) {
+            outputStream.write(key.getBytes());
+            outputStream.write(": ".getBytes());
+            outputStream.write(headers.get(key).getBytes());
+            outputStream.write("\r\n".getBytes());
+        }
+        outputStream.write("\r\n".getBytes());
+        outputStream.write(body);
+        return;
     }
 }

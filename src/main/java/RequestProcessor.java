@@ -3,7 +3,7 @@ import java.nio.file.Files;
 
 public class RequestProcessor {
     
-    public static String handleRequest(String reqString) {
+    public static CCHttpResponse handleRequest(String reqString) {
         return handleRequest(reqString, "default");
     }
 
@@ -18,7 +18,7 @@ public class RequestProcessor {
         return null;
     }
 
-    public static String handleRequest(String reqString, String filesDirectory) {
+    public static CCHttpResponse handleRequest(String reqString, String filesDirectory) {
         
         System.out.println("Recieved request: " + reqString);
 
@@ -50,7 +50,7 @@ public class RequestProcessor {
                 .protocol("HTTP/1.1")
                 .header("Content-Type", "text/plain")
                 .header("Content-Length", String.valueOf(echoString.length()))
-                .body(echoString);
+                .body(echoString.getBytes());
         }
 
         // USER AGENT ROUTE
@@ -64,7 +64,7 @@ public class RequestProcessor {
                 .protocol("HTTP/1.1")
                 .header("Content-Type", "text/plain")
                 .header("Content-Length", String.valueOf(userAgent.length()))
-                .body(userAgent);
+                .body(userAgent.getBytes());
         }
 
         // /files/{filename}
@@ -90,7 +90,7 @@ public class RequestProcessor {
                             .protocol("HTTP/1.1")
                             .header("Content-Type", "application/octet-stream")
                             .header("Content-Length", String.valueOf(fileContent.length()))
-                            .body(fileContent);
+                            .body(fileContent.getBytes());
                     }
                 } catch (Exception e) {
                     responseBuilder.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -129,6 +129,6 @@ public class RequestProcessor {
             }
         }        
         
-        return responseBuilder.build().toString();
+        return responseBuilder.build();
     }
 }
