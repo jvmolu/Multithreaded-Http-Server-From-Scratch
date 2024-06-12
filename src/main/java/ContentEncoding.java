@@ -1,27 +1,33 @@
-import java.util.HashSet;
+import java.util.function.Function;
 
+/*
+* NOTE: Make sure encoding name is same as enum name [GZIP -> gzip] and enum name is in uppercase
+*/
 public enum ContentEncoding {
 
-    GZIP("gzip");
+    GZIP("gzip", ContentEncodingAlgorithms::gzip);
 
-    private static final HashSet<String> supportedEncodings = new HashSet<String>();
     private final String encoding;
+    private final Function<byte[], byte[]> encoder;
 
-    static {
-        for (ContentEncoding encoding : ContentEncoding.values()) {
-            supportedEncodings.add(encoding.getEncoding());
-        }
-    }
-
-    ContentEncoding(String encoding) {
+    ContentEncoding(String encoding, Function<byte[], byte[]> encoder) {
         this.encoding = encoding;
+        this.encoder = encoder;
     }
 
     public String getEncoding() {
         return encoding;
     }
 
+    public String encode(String content) {
+        return new String(encoder.apply(content.getBytes()));
+    }
+
     public static Boolean isSupported(String encoding) {
-        return supportedEncodings.contains(encoding);
+        try {
+            return ContentEncoding.valueOf(encoding.toUpperCase()) != null;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }
