@@ -3,7 +3,6 @@ import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
 public class ContentEncodingAlgorithms {
-
     public static byte[] gzip(byte[] content) {
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -16,5 +15,4 @@ public class ContentEncodingAlgorithms {
             return null;
         }
     }
-
 }
