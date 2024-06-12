@@ -86,7 +86,7 @@ public class CCHttpResponse {
                 System.out.println("Encoding response using " + encoding);
                 byte[] encodedData = ContentEncoding.valueOf(encoding.toUpperCase()).encode(response.body.getBytes());
                 response.body = new String(encodedData);
-                response.headers.put("Content-Length", String.valueOf(response.body.length()));
+                response.headers.put("Content-Length", String.valueOf(encodedData.length));
             }
             return response;
         }
