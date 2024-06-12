@@ -1,4 +1,3 @@
-import java.util.Base64;
 import java.util.function.Function;
 
 /*
@@ -20,8 +19,8 @@ public enum ContentEncoding {
         return encoding;
     }
 
-    public String encode(String content) {
-        return new String(encoder.apply(content.getBytes()));
+    public byte[] encode(byte[] content) {
+        return encoder.apply(content);
     }
 
     public static Boolean isSupported(String encoding) {
