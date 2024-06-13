@@ -10,10 +10,6 @@ import objects.CCHttpResponse;
 
 public class RequestProcessor {
     
-    public static CCHttpResponse handleRequest(String reqString) {
-        return handleRequest(reqString, "default");
-    }
-
     public static String getPossibleEncoding(CCHttpRequest request) {
         if (request.getHeaders().containsKey(Header.ACCEPT_ENCODING.getHeader())) {
             for (String value : request.getHeaders().get(Header.ACCEPT_ENCODING.getHeader()).split(",")) {
@@ -23,6 +19,10 @@ public class RequestProcessor {
             }
         }
         return null;
+    }
+
+    public static CCHttpResponse handleRequest(String reqString) {
+        return handleRequest(reqString, "default");
     }
 
     public static CCHttpResponse handleRequest(String reqString, String filesDirectory) {
