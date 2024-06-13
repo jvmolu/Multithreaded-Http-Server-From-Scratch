@@ -2,7 +2,9 @@ import java.io.File;
 import java.nio.file.Files;
 
 import enums.ContentEncoding;
+import enums.Header;
 import enums.HttpStatus;
+import enums.Protocol;
 import objects.CCHttpRequest;
 import objects.CCHttpResponse;
 
@@ -13,8 +15,8 @@ public class RequestProcessor {
     }
 
     public static String getPossibleEncoding(CCHttpRequest request) {
-        if (request.getHeaders().containsKey("Accept-Encoding")) {
-            for (String value : request.getHeaders().get("Accept-Encoding").split(",")) {
+        if (request.getHeaders().containsKey(Header.ACCEPT_ENCODING.getHeader())) {
+            for (String value : request.getHeaders().get(Header.ACCEPT_ENCODING.getHeader()).split(",")) {
                 if (ContentEncoding.isSupported(value.trim())) {
                     return value.trim();
                 }
@@ -29,19 +31,18 @@ public class RequestProcessor {
 
         CCHttpRequest request = new CCHttpRequest(reqString);
         CCHttpResponse.Builder responseBuilder = new CCHttpResponse.Builder();
-        responseBuilder.protocol("HTTP/1.1");
+        responseBuilder.protocol(Protocol.HTTP_1_1.getProtocol());
         responseBuilder.status(HttpStatus.NOT_FOUND);
 
         // ENCODING
         String encoding = getPossibleEncoding(request);
         if (encoding != null) {
-            responseBuilder.header("Content-Encoding", encoding);
+            responseBuilder.header(Header.CONTENT_ENCODING.getHeader(), encoding);
         }
         
         // PING ROUTE - HEALTH CHECK
         if(request.getPath().equalsIgnoreCase("/")) {
-            responseBuilder.status(HttpStatus.OK)
-                .protocol("HTTP/1.1");
+            responseBuilder.status(HttpStatus.OK);
         }
 
         // ECHO ROUTE /echo/{str}
@@ -52,9 +53,8 @@ public class RequestProcessor {
         else if(request.getPath().startsWith("/echo/")) {
             String echoString = request.getPath().substring(6);
             responseBuilder.status(HttpStatus.OK)
-                .protocol("HTTP/1.1")
-                .header("Content-Type", "text/plain")
-                .header("Content-Length", String.valueOf(echoString.length()))
+                .header(Header.CONTENT_TYPE.getHeader(), "text/plain")
+                .header(Header.CONTENT_LENGTH.getHeader(), String.valueOf(echoString.length()))
                 .body(echoString.getBytes());
         }
 
@@ -64,11 +64,10 @@ public class RequestProcessor {
         // SAMPLE RESPONSE:
         // HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 14\r\n\r\ncurl/7.64.1
         else if(request.getPath().equalsIgnoreCase("/user-agent")) {
-            String userAgent = request.getHeaders().get("User-Agent");
+            String userAgent = request.getHeaders().get(Header.CONTENT_LENGTH.getHeader());
             responseBuilder.status(HttpStatus.OK)
-                .protocol("HTTP/1.1")
-                .header("Content-Type", "text/plain")
-                .header("Content-Length", String.valueOf(userAgent.length()))
+                .header(Header.CONTENT_TYPE.getHeader(), "text/plain")
+                .header(Header.CONTENT_LENGTH.getHeader(), String.valueOf(userAgent.length()))
                 .body(userAgent.getBytes());
         }
 
@@ -80,26 +79,23 @@ public class RequestProcessor {
         else if(request.getPath().startsWith("/files/") && request.getMethod().equalsIgnoreCase("GET")) {
             String fileName = request.getPath().substring(7);
             if (fileName.contains("..")) {
-                responseBuilder.status(HttpStatus.FORBIDDEN)
-                    .protocol("HTTP/1.1");
-            } else {
+                responseBuilder.status(HttpStatus.FORBIDDEN);
+            }
+            else {
                 try {
                     File file = new File(filesDirectory + "/" + fileName);
                     if (!file.exists() || !file.isFile()) {
-                        responseBuilder.status(HttpStatus.NOT_FOUND)
-                            .protocol("HTTP/1.1");
+                        responseBuilder.status(HttpStatus.NOT_FOUND);
                     }
                     else {
                         String fileContent = new String(Files.readAllBytes(file.toPath()));
                         responseBuilder.status(HttpStatus.OK)
-                            .protocol("HTTP/1.1")
-                            .header("Content-Type", "application/octet-stream")
-                            .header("Content-Length", String.valueOf(fileContent.length()))
+                            .header(Header.CONTENT_TYPE.getHeader(), "application/octet-stream")
+                            .header(Header.CONTENT_LENGTH.getHeader(), String.valueOf(fileContent.length()))
                             .body(fileContent.getBytes());
                     }
                 } catch (Exception e) {
-                    responseBuilder.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .protocol("HTTP/1.1");
+                    responseBuilder.status(HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
         }
@@ -113,26 +109,22 @@ public class RequestProcessor {
         else if(request.getPath().startsWith("/files/") && request.getMethod().equalsIgnoreCase("POST")) {
             String fileName = request.getPath().substring(7);
             if (fileName.contains("..")) {
-                responseBuilder.status(HttpStatus.FORBIDDEN)
-                    .protocol("HTTP/1.1");
+                responseBuilder.status(HttpStatus.FORBIDDEN);
             } else {
                 try {
                     File file = new File(filesDirectory + "/" + fileName);
                     if (file.exists()) {
-                        responseBuilder.status(HttpStatus.CONFLICT)
-                            .protocol("HTTP/1.1");
+                        responseBuilder.status(HttpStatus.CONFLICT);
                     }
                     else {
                         Files.write(file.toPath(), request.getBody().getBytes());
-                        responseBuilder.status(HttpStatus.CREATED)
-                            .protocol("HTTP/1.1");
+                        responseBuilder.status(HttpStatus.CREATED);
                     }
                 } catch (Exception e) {
-                    responseBuilder.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .protocol("HTTP/1.1");
+                    responseBuilder.status(HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
-        }        
+        }
         
         return responseBuilder.build();
     }

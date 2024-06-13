@@ -1,6 +1,5 @@
 package enums;
 import java.util.function.Function;
-
 import helper.ContentEncodingAlgorithms;
 
 /*

@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import enums.ContentEncoding;
 import enums.HttpStatus;
+import enums.Header;
 
 public class CCHttpResponse {
     
@@ -87,12 +88,12 @@ public class CCHttpResponse {
             response.headers = this.headers;
             response.body = this.body;
             // Content-Encoding
-            String encoding = this.headers.get("Content-Encoding");
+            String encoding = this.headers.get(Header.CONTENT_ENCODING.getHeader());
             System.out.println("Encoding response using " + encoding);
             if (encoding != null && ContentEncoding.isSupported(encoding)) {
                 System.out.println("Encoding response using " + encoding);
                 byte[] encodedData = ContentEncoding.valueOf(encoding.toUpperCase()).encode(this.body);
-                response.headers.put("Content-Length", String.valueOf(encodedData.length));
+                response.headers.put(Header.CONTENT_LENGTH.getHeader(), String.valueOf(encodedData.length));
                 response.body = encodedData;
             }
             return response;
