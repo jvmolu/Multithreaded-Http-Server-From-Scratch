@@ -1,4 +1,7 @@
+package enums;
 import java.util.function.Function;
+
+import helper.ContentEncodingAlgorithms;
 
 /*
 * NOTE: Make sure encoding name is same as enum name [GZIP -> gzip] and enum name is in uppercase

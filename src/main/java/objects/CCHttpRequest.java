@@ -1,4 +1,7 @@
+package objects;
 import java.util.HashMap;
+
+import enums.RequestParts;
 
 public class CCHttpRequest {
 

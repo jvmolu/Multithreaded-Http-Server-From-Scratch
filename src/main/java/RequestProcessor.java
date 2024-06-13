@@ -1,6 +1,11 @@
 import java.io.File;
 import java.nio.file.Files;
 
+import enums.ContentEncoding;
+import enums.HttpStatus;
+import objects.CCHttpRequest;
+import objects.CCHttpResponse;
+
 public class RequestProcessor {
     
     public static CCHttpResponse handleRequest(String reqString) {
