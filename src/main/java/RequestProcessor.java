@@ -64,7 +64,7 @@ public class RequestProcessor {
         // SAMPLE RESPONSE:
         // HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 14\r\n\r\ncurl/7.64.1
         else if(request.getPath().equalsIgnoreCase("/user-agent")) {
-            String userAgent = request.getHeaders().get(Header.CONTENT_LENGTH.getHeader());
+            String userAgent = request.getHeaders().get(Header.USER_AGENT.getHeader());
             responseBuilder.status(HttpStatus.OK)
                 .header(Header.CONTENT_TYPE.getHeader(), "text/plain")
                 .header(Header.CONTENT_LENGTH.getHeader(), String.valueOf(userAgent.length()))
